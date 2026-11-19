@@ -6,4 +6,3 @@ data
 tests
 **/__pycache__
 *.bat
-*.md

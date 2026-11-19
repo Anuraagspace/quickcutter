@@ -6,19 +6,18 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY requirements.txt .
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY LICENSE README.md AGENTS.md ./
-COPY studio studio
-COPY web web
+COPY studio ./studio
+COPY web ./web
 
 ENV QUICKCUTTER_DATA=/data \
     QUICKCUTTER_HOST=0.0.0.0 \
     QUICKCUTTER_TRUST_PROXY=1 \
     PYTHONUNBUFFERED=1
 
-VOLUME /data
 EXPOSE 8765
 
 CMD ["python", "-m", "studio.server"]
