@@ -51,37 +51,51 @@ BOOT = f"{int(time.time()) % 100000:x}"     # part of every sync token, so pages
 
 @app.on_event("startup")
 async def _more_threads():
-    import anyio.to_thread
-    anyio.to_thread.current_default_thread_limiter().total_tokens = int(config.env("QUICKCUTTER_REQUEST_THREADS", "64"))
+    try:
+        import anyio.to_thread
+        anyio.to_thread.current_default_thread_limiter().total_tokens = int(config.env("QUICKCUTTER_REQUEST_THREADS", "64"))
+    except Exception:
+        pass
 
 
 @app.on_event("startup")
 def _startup():
-    db.init()
-    for f in (config.TMP_DIR / "uploads").glob("*"):      # uploads cut short by a restart
-        try:
-            f.unlink()
-        except OSError:
-            pass
-    render.install_fonts()
+    try:
+        db.init()
+    except Exception as e:
+        print(f"db.init: {e}", flush=True)
+    if config.TMP_DIR.exists():
+        for f in (config.TMP_DIR / "uploads").glob("*"):      # uploads cut short by a restart
+            try:
+                f.unlink()
+            except OSError:
+                pass
+    try:
+        render.install_fonts()
+    except Exception as e:
+        print(f"install_fonts: {e}", flush=True)
     if _tools.missing():
         print("\n  " + _tools.HELP + "\n", flush=True)
-    if not transcribe.REMOTE and config.env("QUICKCUTTER_FETCH_MODEL", "1") != "0":     # the speech model: fetched now, in the background, if it was never downloaded
+    if not config.env("VERCEL") and not transcribe.REMOTE and config.env("QUICKCUTTER_FETCH_MODEL", "1") != "0":     # the speech model: fetched now, in the background, if it was never downloaded
         from . import fetch_model
         threading.Thread(target=lambda: _quiet(fetch_model.ensure), daemon=True).start()
-    jobs.start()
-    live.start()
-    posting.start()
-    from . import updates
-    updates.start()                  # looks for a newer QuickCutter every minute, in the background
-    sec_ok, sec_reasons = security.verify()
-    if not sec_ok:
-        print("\n  [SECURITY ALERT] Code integrity violation detected! QuickCutter is LOCKED.", flush=True)
-        for r in sec_reasons[:5]:
-            print(f"    • {r}", flush=True)
-        print("  Enter Developer Master Security PIN at the web interface or run: python -m studio.security seal <PIN>\n", flush=True)
-    else:
-        print(f"  [SECURITY] Code integrity verified. Author: {security.AUTHOR} (Sealed)", flush=True)
+    if not config.env("VERCEL"):
+        jobs.start()
+        live.start()
+        posting.start()
+        from . import updates
+        updates.start()                  # looks for a newer QuickCutter every minute, in the background
+    try:
+        sec_ok, sec_reasons = security.verify()
+        if not sec_ok:
+            print("\n  [SECURITY ALERT] Code integrity violation detected! QuickCutter is LOCKED.", flush=True)
+            for r in sec_reasons[:5]:
+                print(f"    • {r}", flush=True)
+            print("  Enter Developer Master Security PIN at the web interface or run: python -m studio.security seal <PIN>\n", flush=True)
+        else:
+            print(f"  [SECURITY] Code integrity verified. Author: {security.AUTHOR} (Sealed)", flush=True)
+    except Exception as e:
+        print(f"security.verify: {e}", flush=True)
 
 
 # ================================================================ the gate: who is asking, and are they allowed
@@ -303,11 +317,13 @@ def _from_here(req, must_say=False) -> bool:
 
 def _own_address(host: str) -> bool:
     """Is this the address QuickCutter is really reached by? A number (127.0.0.1, 192.168.1.20), "localhost", or the
-    host in QUICKCUTTER_PUBLIC_URL."""
+    host in QUICKCUTTER_PUBLIC_URL, Vercel or Railway."""
     import ipaddress
     name = host.strip().lower()
     name = name[1:name.index("]")] if name.startswith("[") and "]" in name else name.rsplit(":", 1)[0] if ":" in name else name
-    if name in ("localhost", urlparse(config.PUBLIC_URL).hostname or "") or name.endswith(".localhost"):
+    if name in ("localhost", urlparse(config.PUBLIC_URL).hostname or "") or name.endswith((".localhost", ".vercel.app", ".railway.app", ".up.railway.app")):
+        return True
+    if config.env("VERCEL") or config.env("RAILWAY_ENVIRONMENT"):
         return True
     try:
         ipaddress.ip_address(name)

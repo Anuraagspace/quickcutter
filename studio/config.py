@@ -101,6 +101,13 @@ def _move_folder(old: Path, new: Path) -> bool:
 def _data_folder():
     if env("QUICKCUTTER_DATA"):
         return Path(env("QUICKCUTTER_DATA")), "env"
+    if env("VERCEL") or env("AWS_LAMBDA_FUNCTION_NAME"):
+        p = Path("/tmp/quickcutter_data")
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+        return p, "vercel"
     try:
         chosen = json.loads(STORAGE_FILE.read_text(encoding="utf-8"))
     except (OSError, ValueError):
@@ -134,7 +141,10 @@ ASR_MODEL_DIR = MODELS_DIR / ASR_MODEL_NAME
 DATABASE_URL = env("DATABASE_URL") or f"sqlite:///{(DATA_DIR / 'quickcutter.db').as_posix()}"
 
 for d in (USERS_DIR, MODELS_DIR, TMP_DIR, FONTS_DIR):
-    d.mkdir(parents=True, exist_ok=True)
+    try:
+        d.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
 
 
 def user_dir(uid: str) -> Path:
