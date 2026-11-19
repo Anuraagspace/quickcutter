@@ -1,7 +1,7 @@
 {
   "author": "Anurag Sharma",
   "project": "QuickCutter",
-  "sealed_at": 1795074622.0945141,
+  "sealed_at": 1795076588.8885212,
   "sealed_by": "Anurag Sharma",
   "file_count": 42,
   "files": {
@@ -27,7 +27,7 @@
     "studio/live.py": "27c3755af260e15a6f55efb8323d643fa22cf86147e2d6ad5b156b8a074c8a74",
     "studio/load.py": "008531e78648f0292832a16feee3801c51630e8d07266fa1572747f3b3227c8a",
     "studio/mailer.py": "a6756ad45a495baabc1990e322b32f55cad806752f6fb9bbc25d6f7052a28578",
-    "studio/media.py": "bdd22f574e730f20ac35032d240bbf6acf1845733529be2a236d9c648fb0e189",
+    "studio/media.py": "bc124f6881ba45f0e650772e7519a1bd8dfced5b21f955a97dd9d6f820f86f92",
     "studio/notices.py": "a34641f330c75b0b04909e14bbf873d9c34c609ee87663993d49db0cec779c96",
     "studio/posting.py": "628f6f466765fd79231947c851a6dd404b04fcef53e6addba0cac901c410dd88",
     "studio/profanity.py": "63cc2106d17848a982b2e1b06e12d1ff622d1d02f898555b0efd532dcf7b106f",
@@ -36,7 +36,7 @@
     "studio/roman.py": "fe5ebdeb3e4e2bb1324ce4a7638f6ad10b4b95b349c4e1588912429fa853dc6b",
     "studio/safe.py": "6d88d1cf9a7118a112ad1d9a0aee35b0ab04b4fa0241a19258abb1dbfb699301",
     "studio/security.py": "7570fa21351f5fedc5941b59c8db834cb7d1009436a2fe81613029fbf9be9f38",
-    "studio/server.py": "134671edfd69dfdfa1983468496933fae331cb401fdd91c573d75cc1d3b55c8d",
+    "studio/server.py": "07d2f68dc7aae4f85a3a572035c3585e04c5bc876ee7247a82248ae2a248a840",
     "studio/storage.py": "0661d6119c637f3a07bce6cc4e187439acf6d719da90494d02a7c636b64b4b61",
     "studio/tools.py": "3ef87d51ac84e18adbae92b1e982de7f75fd6acfc57f078d5de5f3579fca8e1d",
     "studio/transcribe.py": "97736112f702b241786cf94ae962c8f3a41ded6c4b175464d49983d7f7162fe9",

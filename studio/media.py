@@ -1,6 +1,7 @@
 """Getting video in: link download, probing, audio extraction, loudness."""
 import contextlib
 import json
+import os
 import re
 import subprocess
 import time
@@ -20,7 +21,7 @@ NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 # YouTube sometimes refuses a server's downloads altogether ("sign in to confirm you're not a bot"). It is a
 # refusal of the server, not of one video, so once it happens YouTube links are turned away at once for a few
 # minutes, with a clear message, instead of each one waiting to fail. Then the next link simply tries again.
-YT_PAUSE = 600
+YT_PAUSE = 60
 _yt_refused_until = 0.0
 YT_BLOCKED = ("YouTube isn't letting QuickCutter download videos right now. Upload the video file instead, or use a "
               "Twitch or Kick link. YouTube links will be tried again in a few minutes.")
@@ -39,6 +40,11 @@ def is_youtube(url: str) -> bool:
 
 def youtube_paused() -> bool:
     return time.time() < _yt_refused_until
+
+
+def clear_refusal():
+    global _yt_refused_until
+    _yt_refused_until = 0.0
 
 
 def check_youtube(url: str):
@@ -61,6 +67,8 @@ def _youtube_guard(url):
     check_youtube(url)
     try:
         yield
+        if is_youtube(url):
+            clear_refusal()
     except YouTubeBlocked:
         raise
     except Exception as e:  # noqa: BLE001
@@ -117,7 +125,38 @@ def _ydl(opts):
         "http_chunk_size": 5242880,
         "concurrent_fragment_downloads": 4,
         "js_runtimes": {"node": {}},
+        "http_headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["tv", "tv_simply", "android", "ios", "mweb", "web"],
+            }
+        },
     }
+
+    # Optional YouTube cookies support for datacenter hosting
+    cookie_file = None
+    if os.environ.get("QUICKCUTTER_YOUTUBE_COOKIES"):
+        cf = config.DATA_DIR / "youtube_cookies.txt"
+        try:
+            cf.write_text(os.environ["QUICKCUTTER_YOUTUBE_COOKIES"].strip(), encoding="utf-8")
+            cookie_file = cf
+        except Exception:
+            pass
+    elif os.environ.get("QUICKCUTTER_YOUTUBE_COOKIES_FILE"):
+        p = Path(os.environ["QUICKCUTTER_YOUTUBE_COOKIES_FILE"])
+        if p.is_file():
+            cookie_file = p
+    elif (config.DATA_DIR / "cookies.txt").is_file():
+        cookie_file = config.DATA_DIR / "cookies.txt"
+    elif (config.ROOT / "cookies.txt").is_file():
+        cookie_file = config.ROOT / "cookies.txt"
+
+    if cookie_file and Path(cookie_file).is_file():
+        defaults["cookiefile"] = str(cookie_file)
+
     defaults.update(opts)
     return yt_dlp.YoutubeDL(defaults)
 
@@ -136,8 +175,27 @@ def _biggest(job_dir: Path, stem: str) -> Path:
 
 def info(url: str) -> dict:
     """Title, channel and length, without downloading anything."""
-    with _youtube_guard(url), _ydl({}) as ydl:
-        i = ydl.extract_info(url, download=False)
+    try:
+        with _youtube_guard(url), _ydl({}) as ydl:
+            i = ydl.extract_info(url, download=False)
+    except Exception as err:
+        msg = str(err).lower()
+        if is_youtube(url) and any(w in msg for w in ("unavailable", "private video", "not found", "deleted")):
+            raise ValueError("That YouTube video is unavailable, private or deleted.") from None
+        if is_youtube(url) and _BOT_CHECK.search(str(err)):
+            # Fallback specifically forcing TV client to bypass datacenter bot detection
+            try:
+                with _ydl({"extractor_args": {"youtube": {"player_client": ["tv", "tv_simply", "android"]}}}) as ydl:
+                    i = ydl.extract_info(url, download=False)
+                    clear_refusal()
+            except Exception as retry_err:
+                r_msg = str(retry_err).lower()
+                if any(w in r_msg for w in ("unavailable", "private video", "not found", "deleted")):
+                    raise ValueError("That YouTube video is unavailable, private or deleted.") from None
+                note_refusal(url, retry_err)
+                raise YouTubeBlocked(YT_BLOCKED) from None
+        else:
+            raise
     return {"title": i.get("title") or "", "uploader": i.get("uploader") or i.get("channel") or "",
             "duration": float(i.get("duration") or 0), "is_live": bool(i.get("is_live")),
             "thumbnail": i.get("thumbnail") or "", "kind": i.get("_type") or "video"}
@@ -268,17 +326,45 @@ def download_audio(url: str, job_dir: Path, on_progress=None) -> Path:
         if on_progress and d.get("status") == "downloading" and total:
             on_progress(d.get("downloaded_bytes", 0) / total)
 
-    with _youtube_guard(url), _ydl({"format": "ba[abr<=96]/ba[ext=m4a]/ba/worst", "outtmpl": str(job_dir / "audio_src.%(ext)s"),
-               "progress_hooks": [hook]}) as ydl:
-        ydl.download([url])
+    opts = {"format": "ba[abr<=96]/ba[ext=m4a]/ba/worst", "outtmpl": str(job_dir / "audio_src.%(ext)s"),
+            "progress_hooks": [hook]}
+    try:
+        with _youtube_guard(url), _ydl(opts) as ydl:
+            ydl.download([url])
+    except Exception as err:
+        if is_youtube(url) and _BOT_CHECK.search(str(err)):
+            opts["extractor_args"] = {"youtube": {"player_client": ["tv", "tv_simply", "android"]}}
+            try:
+                with _ydl(opts) as ydl:
+                    ydl.download([url])
+                    clear_refusal()
+            except Exception:
+                note_refusal(url, err)
+                raise YouTubeBlocked(YT_BLOCKED) from None
+        else:
+            raise
     return _biggest(job_dir, "audio_src")
 
 
 def download(url: str, job_dir: Path, height=720) -> Path:
     """The whole video. Used for shorter videos, where this is quicker than fetching pieces."""
-    with _youtube_guard(url), _ydl({"format": _video_format(height), "merge_output_format": "mp4",
-                                    "outtmpl": str(job_dir / "source.%(ext)s")}) as ydl:
-        ydl.download([url])
+    opts = {"format": _video_format(height), "merge_output_format": "mp4",
+            "outtmpl": str(job_dir / "source.%(ext)s")}
+    try:
+        with _youtube_guard(url), _ydl(opts) as ydl:
+            ydl.download([url])
+    except Exception as err:
+        if is_youtube(url) and _BOT_CHECK.search(str(err)):
+            opts["extractor_args"] = {"youtube": {"player_client": ["tv", "tv_simply", "android"]}}
+            try:
+                with _ydl(opts) as ydl:
+                    ydl.download([url])
+                    clear_refusal()
+            except Exception:
+                note_refusal(url, err)
+                raise YouTubeBlocked(YT_BLOCKED) from None
+        else:
+            raise
     return _biggest(job_dir, "source")
 
 
@@ -286,10 +372,24 @@ def download_section(url: str, out_dir: Path, stem: str, start: float, end: floa
     """Just one stretch of the video. The cut lands on a keyframe, so find_offset() pins the true start."""
     from yt_dlp.utils import download_range_func
     out_dir.mkdir(parents=True, exist_ok=True)
-    with _youtube_guard(url), _ydl({"format": _video_format(height), "merge_output_format": "mp4",
-               "outtmpl": str(out_dir / (stem + ".%(ext)s")),
-               "download_ranges": download_range_func(None, [(max(0.0, start), end)])}) as ydl:
-        ydl.download([url])
+    opts = {"format": _video_format(height), "merge_output_format": "mp4",
+            "outtmpl": str(out_dir / (stem + ".%(ext)s")),
+            "download_ranges": download_range_func(None, [(max(0.0, start), end)])}
+    try:
+        with _youtube_guard(url), _ydl(opts) as ydl:
+            ydl.download([url])
+    except Exception as err:
+        if is_youtube(url) and _BOT_CHECK.search(str(err)):
+            opts["extractor_args"] = {"youtube": {"player_client": ["tv", "tv_simply", "android"]}}
+            try:
+                with _ydl(opts) as ydl:
+                    ydl.download([url])
+                    clear_refusal()
+            except Exception:
+                note_refusal(url, err)
+                raise YouTubeBlocked(YT_BLOCKED) from None
+        else:
+            raise
     return _biggest(out_dir, stem)
 
 

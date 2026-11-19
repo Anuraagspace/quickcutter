@@ -761,7 +761,10 @@ def link_preview(request: Request, url: str = ""):
         raise HTTPException(422, str(e))
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
+        msg = str(e).lower()
+        if any(w in msg for w in ("unavailable", "private video", "not found", "deleted")):
+            raise HTTPException(422, "That video is unavailable, private or deleted on YouTube.")
         raise HTTPException(422, "Couldn't open that video. Check the link is public and complete.")
 
 
