@@ -34,6 +34,8 @@ svg{width:18px;height:18px;flex:none;fill:currentColor}
 .side{background:var(--frame);color:var(--frame-text);display:flex;flex-direction:column;height:100vh;padding:14px 10px 12px;min-width:0}
 .side-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 4px 20px 6px}
 .side-head .logo{height:auto;width:auto;display:flex;align-items:center;gap:11px;text-decoration:none;user-select:none}
+.qc-logo-img{width:36px;height:36px;border-radius:10px;object-fit:cover;box-shadow:0 3px 12px rgba(0,0,0,0.4),0 0 8px rgba(212,175,55,0.3);flex:none;border:1px solid rgba(255,240,220,0.22);transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
+.qc-logo-img:hover{transform:scale(1.08) rotate(2deg)}
 .qc-badge{width:34px;height:34px;background:var(--brand);color:var(--on-brand);border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:13px;letter-spacing:-0.5px;box-shadow:0 3px 10px rgba(121,11,19,0.5);flex:none}
 .qc-brand-text{display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .qc-title{font-family:'Playfair Display','Oswald',serif;font-size:18px;font-weight:700;letter-spacing:-0.2px;color:var(--frame-text);white-space:nowrap}
@@ -76,8 +78,16 @@ img.avatar{object-fit:cover;background:rgba(255,255,255,.08)}
 .scrim{display:none}
 
 main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:calc(100vh - 16px);overflow-y:auto;min-width:0;scrollbar-gutter:stable}
-.topbar{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 28px;min-height:54px;border-bottom:1px solid transparent;transition:border-color .2s ease}
-.topbar.stuck{border-color:var(--line)}
+.topbar{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,#FFF7EE 0%,#FDF1E8 40%,#FAECE5 75%,#FFF6EE 100%);display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 28px;min-height:58px;border-bottom:1px solid rgba(121,11,19,0.08);box-shadow:0 3px 16px rgba(121,11,19,0.025);transition:all .25s ease}
+.topbar.stuck{background:rgba(255,246,238,0.95);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:rgba(121,11,19,0.12);box-shadow:0 4px 20px rgba(121,11,19,0.06)}
+.btn-social-ig{background:linear-gradient(135deg,#FFF0F5 0%,#FEE5ED 50%,#FCE8F3 100%)!important;border:1px solid rgba(225,48,108,0.3)!important;color:#C13584!important;font-weight:600!important;font-size:12.5px!important;border-radius:999px!important;padding:0 14px!important;height:34px!important;box-shadow:0 2px 8px rgba(225,48,108,0.1)!important;transition:all .22s cubic-bezier(.16,1,.3,1)!important}
+.btn-social-ig svg{color:#E1306C!important;transition:transform .2s ease}
+.btn-social-ig:hover{background:linear-gradient(135deg,#FFE4EC 0%,#FCD8E3 100%)!important;border-color:rgba(225,48,108,0.55)!important;color:#B0206E!important;transform:translateY(-1.5px);box-shadow:0 4px 14px rgba(225,48,108,0.22)!important}
+.btn-social-ig:hover svg{transform:scale(1.15) rotate(4deg)}
+.btn-social-gh{background:linear-gradient(135deg,#FFFFFF 0%,#FBF6F0 100%)!important;border:1px solid rgba(121,11,19,0.2)!important;color:#4A1217!important;font-weight:600!important;font-size:12.5px!important;border-radius:999px!important;padding:0 14px!important;height:34px!important;box-shadow:0 2px 8px rgba(121,11,19,0.06)!important;transition:all .22s cubic-bezier(.16,1,.3,1)!important}
+.btn-social-gh svg{color:#24292F!important;transition:transform .2s ease}
+.btn-social-gh:hover{background:#FFFFFF!important;border-color:rgba(121,11,19,0.45)!important;color:#790B13!important;transform:translateY(-1.5px);box-shadow:0 4px 14px rgba(121,11,19,0.14)!important}
+.btn-social-gh:hover svg{transform:scale(1.15) rotate(-4deg)}
 #vbanner:empty{display:none}
 .upd{display:grid;gap:14px}
 .upd ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px;color:var(--text);max-height:180px;overflow:auto}
@@ -178,8 +188,9 @@ main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:
 .chan .main input{accent-color:var(--brand);width:15px;height:15px;flex:none}
 .chan .sbadge{margin:0}
 @media (max-width:640px){.chan{flex-wrap:wrap}.chan .main{order:5}}
-.topbar h1{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--brand-ink)}
-.topbar p{font-size:12px;color:var(--dim);margin-top:0;overflow-wrap:anywhere}
+.topbar h1{font-family:'Playfair Display','Oswald',serif;font-size:17px;font-weight:700;letter-spacing:-.2px;color:#5A080E;margin:0;display:flex;align-items:center;gap:8px}
+.topbar p{font-size:12.5px;color:#8C484F;font-weight:500;margin:0;display:inline-flex;align-items:center;gap:6px}
+.topbar p::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#E07A5F;box-shadow:0 0 6px rgba(224,122,95,0.6)}
 .icon-btn.menu{display:none}
 .content{padding:28px 32px 72px;max-width:1280px;margin:0 auto}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -843,13 +854,13 @@ dialog[open]{animation:fadein .16s ease}
   <aside class="side" aria-label="Sidebar">
     <div class="side-head">
       <div class="logo">
-        <div class="qc-badge">QC</div>
+        <img src="/brand/logo.png" class="qc-logo-img" alt="Quick Cutting" />
         <div class="qc-brand-text">
           <div class="qc-title">Quick<span class="qc-accent">Cutter</span></div>
           <div class="qc-author">by Anurag Sharma</div>
         </div>
       </div>
-      <div class="mark" style="width:34px;height:34px;background:var(--brand);color:var(--on-brand);border-radius:9px;display:none;place-items:center;font-weight:800;font-size:14px;box-shadow:0 3px 10px rgba(121,11,19,0.5);margin:0 auto">QC</div>
+      <img src="/brand/logo.png" alt="Quick Cutting" class="mark" style="width:34px;height:34px;border-radius:9px;display:none;margin:0 auto;box-shadow:0 3px 10px rgba(0,0,0,0.4);object-fit:cover" />
       <button class="icon-btn collapse" data-act="collapse" id="collapseBtn" aria-label="Collapse sidebar"></button></div>
     <nav class="nav" id="nav" aria-label="Main"></nav>
     <div class="side-foot" id="foot"></div>
@@ -1306,8 +1317,8 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
   let pic = "", subHtml = null, tabs = "";
   const lks = S.status.links || {};
   let social = "";
-  if (lks.follow) social += `<a class="btn sm" href="${esc(lks.follow)}" target="_blank" rel="noopener">${ic("instagram")}<span class="long">Instagram</span></a>`;
-  if (lks.repo) social += `<a class="btn sm" href="${esc(lks.repo)}" target="_blank" rel="noopener">${ic("github")}<span class="long">GitHub</span></a>`;
+  if (lks.follow) social += `<a class="btn sm btn-social-ig" href="${esc(lks.follow)}" target="_blank" rel="noopener">${ic("instagram")}<span class="long">Instagram</span></a>`;
+  if (lks.repo) social += `<a class="btn sm btn-social-gh" href="${esc(lks.repo)}" target="_blank" rel="noopener">${ic("github")}<span class="long">GitHub</span></a>`;
   if (c) {
     title = c.name;
     pic = cav(c);
