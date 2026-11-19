@@ -18,6 +18,7 @@ ENV QUICKCUTTER_DATA=/data \
     QUICKCUTTER_TRUST_PROXY=1 \
     PYTHONUNBUFFERED=1
 
+EXPOSE 8080
 EXPOSE 8765
 
 CMD ["python", "-m", "studio.server"]

@@ -1,7 +1,7 @@
 {
   "author": "Anurag Sharma",
   "project": "QuickCutter",
-  "sealed_at": 1795071004.9090047,
+  "sealed_at": 1795072022.7882411,
   "sealed_by": "Anurag Sharma",
   "file_count": 42,
   "files": {
@@ -17,7 +17,7 @@
     "studio/asr_worker.py": "32faccc9e005c21c89c92c0ff0d0bf1537fb8d4d30e177832e39bf7a0f9a9cec",
     "studio/auth.py": "b6e8b57a5881c38babfaba60b40e148002d687ee1cfb81ae9037e1c1c5071192",
     "studio/brain.py": "f429d1b9b7c20aadf4d0f92fff3e3ab2405d4014716497213f6c458484177771",
-    "studio/config.py": "cf5dd1e502f7e4b2239de0c94b036fcdc74b21088904cb551d87af995fba734d",
+    "studio/config.py": "4352b028ca6d60c04641587e14a0cef98fd6318c9e330165761f044039ca48b2",
     "studio/creators.py": "418c2116c37fb3e34bbff9592d2adf430f791ac83d8a27957acd2dd179e3edd9",
     "studio/ctx.py": "46e55567a42252b26ef47c39b53b81b19f2eab75f25f8a4667f362443209bb09",
     "studio/db.py": "17b34341f1de6e42f5cd12646715ce57a97a050264b5a71aea135b91ff1bfa3c",
