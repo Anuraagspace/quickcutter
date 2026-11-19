@@ -1,7 +1,7 @@
 {
   "author": "Anurag Sharma",
   "project": "QuickCutter",
-  "sealed_at": 1795070598.4808435,
+  "sealed_at": 1795071004.9090047,
   "sealed_by": "Anurag Sharma",
   "file_count": 42,
   "files": {
@@ -27,7 +27,7 @@
     "studio/live.py": "27c3755af260e15a6f55efb8323d643fa22cf86147e2d6ad5b156b8a074c8a74",
     "studio/load.py": "008531e78648f0292832a16feee3801c51630e8d07266fa1572747f3b3227c8a",
     "studio/mailer.py": "a6756ad45a495baabc1990e322b32f55cad806752f6fb9bbc25d6f7052a28578",
-    "studio/media.py": "017a912c317fb464b377648d53f82df5432f23b36ed02632faa01f6803f0c976",
+    "studio/media.py": "bdd22f574e730f20ac35032d240bbf6acf1845733529be2a236d9c648fb0e189",
     "studio/notices.py": "a34641f330c75b0b04909e14bbf873d9c34c609ee87663993d49db0cec779c96",
     "studio/posting.py": "628f6f466765fd79231947c851a6dd404b04fcef53e6addba0cac901c410dd88",
     "studio/profanity.py": "63cc2106d17848a982b2e1b06e12d1ff622d1d02f898555b0efd532dcf7b106f",

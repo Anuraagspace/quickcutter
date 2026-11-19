@@ -7,7 +7,10 @@ import time
 from pathlib import Path
 
 import numpy as np
-import soundfile as sf
+try:
+    import soundfile as sf
+except (ImportError, OSError):
+    sf = None
 
 from . import config
 
@@ -328,6 +331,8 @@ def extract_audio(src: Path, wav: Path):
 
 
 def load_audio(wav: Path) -> np.ndarray:
+    if sf is None:
+        raise RuntimeError("soundfile library (libsndfile) is not available in this environment.")
     data, sr = sf.read(str(wav), dtype="int16")
     assert sr == 16000
     return data
