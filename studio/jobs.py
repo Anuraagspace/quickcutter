@@ -715,9 +715,9 @@ def _run_job(job):
                 c["status"] = "queued"
                 futures.append((renders.submit(ctx.bind(make), c, list(words)), c))
         save(job)
-    # The transcript of the next part is written while the AI is still reading this one (the AI is a wait on the
-    # network, the transcript is work on this machine), so neither waits for the other.
-    ahead = ThreadPoolExecutor(2, thread_name_prefix="ahead")
+    # The transcript of the next part is written while the AI is still reading this one.
+    # We use 1 worker to keep memory usage low and prevent OOM on cloud containers with long videos.
+    ahead = ThreadPoolExecutor(1, thread_name_prefix="ahead")
     heard, now_on = {}, [done_blocks]
 
     def hear(i):

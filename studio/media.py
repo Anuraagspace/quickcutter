@@ -203,21 +203,37 @@ def info(url: str) -> dict:
 
 def youtube_words(url: str):
     """YouTube's own transcript of a video, word by word: ([{'w', 's', 'e'}, ...], language), or None if the video
-    has none. Only the transcript in the language that was spoken is used, never a translation."""
+    has none. Checks human subtitles first, then automatic captions in original, Hindi, English, or first available."""
     if not is_youtube(url):
         return None
     import json
     with _youtube_guard(url), _ydl({}) as ydl:
         i = ydl.extract_info(url, download=False)
         auto = i.get("automatic_captions") or {}
-        key = next((k for k in auto if k.endswith("-orig")), None)
-        if not key and i.get("language") in auto:
-            key = i["language"]
-        track = next((f for f in auto.get(key) or [] if f.get("ext") == "json3" and f.get("url")), None) if key else None
+        subtitles = i.get("subtitles") or {}
+        track, key = None, None
+        for pool in (subtitles, auto):
+            # 1. Spoken original language (-orig)
+            key = next((k for k in pool if k.endswith("-orig")), None)
+            if not key and i.get("language") in pool:
+                key = i["language"]
+            if not key:
+                # 2. Hindi, English, or common variants
+                for cand in ("hi", "en", "hi-Latn", "en-US", "en-GB"):
+                    if cand in pool:
+                        key = cand
+                        break
+            if not key and pool:
+                # 3. Any available transcript track
+                key = next(iter(pool))
+            if key and pool.get(key):
+                track = next((f for f in pool[key] if f.get("ext") == "json3" and f.get("url")), None)
+                if track:
+                    break
         if not track:
             return None
         raw = ydl.urlopen(track["url"]).read(40_000_000)
-    return _caption_words(json.loads(raw)), key.replace("-orig", "")
+    return _caption_words(json.loads(raw)), (key or "").replace("-orig", "")
 
 
 def youtube_english_words(url: str):
@@ -438,11 +454,21 @@ def load_audio(wav: Path) -> np.ndarray:
     return data
 
 
-def loudness_per_second(audio: np.ndarray) -> np.ndarray:
-    """RMS level in dB for each second of audio."""
+def loudness_per_second(audio: np.ndarray, chunk_seconds: int = 120) -> np.ndarray:
+    """RMS level in dB for each second of audio, calculated in chunks to prevent memory spikes on long videos."""
     n = len(audio) // 16000
     if n == 0:
         return np.zeros(1, dtype=np.float32)
-    x = audio[: n * 16000].reshape(n, 16000).astype(np.float32) / 32768.0
-    rms = np.sqrt((x ** 2).mean(axis=1) + 1e-10)
-    return (20 * np.log10(rms)).astype(np.float32)
+    out = np.empty(n, dtype=np.float32)
+    chunk_size = chunk_seconds * 16000
+    for i in range(0, n * 16000, chunk_size):
+        end = min(n * 16000, i + chunk_size)
+        sec_start = i // 16000
+        sec_end = end // 16000
+        sec_count = sec_end - sec_start
+        if sec_count <= 0:
+            continue
+        x = audio[i:end].reshape(sec_count, 16000).astype(np.float32) / 32768.0
+        rms = np.sqrt((x ** 2).mean(axis=1) + 1e-10)
+        out[sec_start:sec_end] = 20 * np.log10(rms)
+    return out
