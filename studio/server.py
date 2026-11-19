@@ -1630,8 +1630,56 @@ def admin_delete_user(request: Request, uid: str, body: dict = Body(...)):
     return {"ok": True}
 
 
+def _bridge_port(listen_port: int, target_port: int):
+    """Bridge another port to the active server port so cloud proxies never get 502."""
+    import socket, threading
+    if listen_port == target_port:
+        return
+
+    def pipe(src, dst):
+        try:
+            while True:
+                buf = src.recv(4096)
+                if not buf:
+                    break
+                dst.sendall(buf)
+        except Exception:
+            pass
+        finally:
+            try:
+                src.close()
+            except Exception:
+                pass
+            try:
+                dst.close()
+            except Exception:
+                pass
+
+    def run():
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind(("0.0.0.0", listen_port))
+            s.listen(128)
+            while True:
+                client, _ = s.accept()
+                target = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                try:
+                    target.connect(("127.0.0.1", target_port))
+                    threading.Thread(target=pipe, args=(client, target), daemon=True).start()
+                    threading.Thread(target=pipe, args=(target, client), daemon=True).start()
+                except Exception:
+                    client.close()
+        except Exception:
+            pass
+
+    threading.Thread(target=run, daemon=True).start()
+
+
 def main():
-    print(f"\n  Quick Cutter is running on {config.HOST}:{config.PORT} (Public: {config.PUBLIC_URL})\n", flush=True)
+    alt_port = 8765 if config.PORT == 8080 else 8080
+    _bridge_port(alt_port, config.PORT)
+    print(f"\n  Quick Cutter is running on {config.HOST}:{config.PORT} (Bridged: {alt_port}, Public: {config.PUBLIC_URL})\n", flush=True)
     if not config.ACCOUNTS and (config.HTTPS or config.HOST not in ("127.0.0.1", "localhost", "::1")):
         print("  Sign-in is off, so anyone who can reach this address can use Quick Cutter and its AI key.\n"
               "  On a server other people can reach, set QUICKCUTTER_ACCOUNTS=1 in .env.\n", flush=True)

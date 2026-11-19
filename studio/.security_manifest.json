@@ -1,7 +1,7 @@
 {
   "author": "Anurag Sharma",
   "project": "QuickCutter",
-  "sealed_at": 1795072022.7882411,
+  "sealed_at": 1795072537.965811,
   "sealed_by": "Anurag Sharma",
   "file_count": 42,
   "files": {
@@ -36,7 +36,7 @@
     "studio/roman.py": "fe5ebdeb3e4e2bb1324ce4a7638f6ad10b4b95b349c4e1588912429fa853dc6b",
     "studio/safe.py": "6d88d1cf9a7118a112ad1d9a0aee35b0ab04b4fa0241a19258abb1dbfb699301",
     "studio/security.py": "7570fa21351f5fedc5941b59c8db834cb7d1009436a2fe81613029fbf9be9f38",
-    "studio/server.py": "7b65852d9d2e76559b9078cee9c6d45ebf9312bde402c84de099a4457f0ca3c3",
+    "studio/server.py": "134671edfd69dfdfa1983468496933fae331cb401fdd91c573d75cc1d3b55c8d",
     "studio/storage.py": "0661d6119c637f3a07bce6cc4e187439acf6d719da90494d02a7c636b64b4b61",
     "studio/tools.py": "3ef87d51ac84e18adbae92b1e982de7f75fd6acfc57f078d5de5f3579fca8e1d",
     "studio/transcribe.py": "97736112f702b241786cf94ae962c8f3a41ded6c4b175464d49983d7f7162fe9",
