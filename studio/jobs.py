@@ -540,6 +540,7 @@ def _english_part(job, clip):
 
 LONG_VIDEO = 40 * 60   # above this, fetch only the pieces that become clips
 PAD = 12               # seconds kept either side of a fetched piece, so clips can be re-trimmed
+_dl_lock = threading.Lock()
 
 
 def _fetch_piece(job, clip, full_audio):
@@ -548,8 +549,15 @@ def _fetch_piece(job, clip, full_audio):
     o = job["options"]
     try:
         want = max(0.0, clip["start"] - PAD)
-        piece = media.download_section(job["source"]["url"], d / "clips", f"{clip['id']}.src", want,
-                                       min(job["duration"], clip["end"] + PAD), int(o["quality"]))
+        with _dl_lock:
+            # Serialized download to avoid YouTube concurrent rate-limiting from datacenter IPs
+            try:
+                piece = media.download_section(job["source"]["url"], d / "clips", f"{clip['id']}.src", want,
+                                               min(job["duration"], clip["end"] + PAD), int(o["quality"]))
+            except Exception:
+                time.sleep(2)
+                piece = media.download_section(job["source"]["url"], d / "clips", f"{clip['id']}.src", want,
+                                               min(job["duration"], clip["end"] + PAD), int(o["quality"]))
         wav = d / "clips" / f"{clip['id']}.wav"
         media.extract_audio(piece, wav)
         part = media.load_audio(wav)

@@ -1,7 +1,7 @@
 {
   "author": "Anurag Sharma",
   "project": "QuickCutter",
-  "sealed_at": 1795087134.793538,
+  "sealed_at": 1795093129.8553233,
   "sealed_by": "Anurag Sharma",
   "file_count": 42,
   "files": {
@@ -23,11 +23,11 @@
     "studio/db.py": "17b34341f1de6e42f5cd12646715ce57a97a050264b5a71aea135b91ff1bfa3c",
     "studio/feedback.py": "b41925865e83d1c14f3079aa38f5f646fd4c4912ccf3f8cf9e6ef102ea2e4dc0",
     "studio/fetch_model.py": "6e99b74cad2c2c903be978a152c7c65c594ad1c1ad6a1bb7d961fc1988ae59e5",
-    "studio/jobs.py": "85407bcbf5804cce041538b80fba9908626f298fa9458193940a5c066735b9cd",
+    "studio/jobs.py": "d10cf5b177192053a10261113355ee27101518eb6e48d7cfa7d67642ba9b3728",
     "studio/live.py": "27c3755af260e15a6f55efb8323d643fa22cf86147e2d6ad5b156b8a074c8a74",
     "studio/load.py": "008531e78648f0292832a16feee3801c51630e8d07266fa1572747f3b3227c8a",
     "studio/mailer.py": "a6756ad45a495baabc1990e322b32f55cad806752f6fb9bbc25d6f7052a28578",
-    "studio/media.py": "3950da1c60b0b9370afe6000f60d4d7e90087b7c66846aa3a4c715ccd32168c0",
+    "studio/media.py": "81685d245531e787c5608ad4bed0474fd285edbcb71564e1bd7c47693eee3735",
     "studio/notices.py": "a34641f330c75b0b04909e14bbf873d9c34c609ee87663993d49db0cec779c96",
     "studio/posting.py": "628f6f466765fd79231947c851a6dd404b04fcef53e6addba0cac901c410dd88",
     "studio/profanity.py": "63cc2106d17848a982b2e1b06e12d1ff622d1d02f898555b0efd532dcf7b106f",

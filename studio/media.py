@@ -395,15 +395,20 @@ def download_section(url: str, out_dir: Path, stem: str, start: float, end: floa
         with _youtube_guard(url), _ydl(opts) as ydl:
             ydl.download([url])
     except Exception as err:
-        if is_youtube(url) and _BOT_CHECK.search(str(err)):
-            opts["extractor_args"] = {"youtube": {"player_client": ["tv", "tv_simply", "android"]}}
+        if is_youtube(url):
+            # Fallback to single progressive stream (e.g. format 18) with TV/Android client
+            fallback_opts = dict(opts)
+            fallback_opts["format"] = "b[height<=720]/18/b/best"
+            fallback_opts["extractor_args"] = {"youtube": {"player_client": ["tv", "tv_simply", "android", "mweb"]}}
             try:
-                with _ydl(opts) as ydl:
+                with _ydl(fallback_opts) as ydl:
                     ydl.download([url])
                     clear_refusal()
-            except Exception:
-                note_refusal(url, err)
-                raise YouTubeBlocked(YT_BLOCKED) from None
+            except Exception as e2:
+                if _BOT_CHECK.search(str(e2)) or _BOT_CHECK.search(str(err)):
+                    note_refusal(url, e2)
+                    raise YouTubeBlocked(YT_BLOCKED) from None
+                raise
         else:
             raise
     return _biggest(out_dir, stem)
