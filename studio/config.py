@@ -144,8 +144,8 @@ def user_dir(uid: str) -> Path:
 
 
 # ---------------------------------------------------------------- the site
-HOST = env("QUICKCUTTER_HOST", "127.0.0.1")
-PORT = int(env("QUICKCUTTER_PORT") or "8765")
+HOST = env("QUICKCUTTER_HOST") or ("0.0.0.0" if env("PORT") else "127.0.0.1")
+PORT = int(env("QUICKCUTTER_PORT") or env("PORT") or "8765")
 PUBLIC_URL = (env("QUICKCUTTER_PUBLIC_URL") or f"http://127.0.0.1:{PORT}").rstrip("/")   # e.g. https://quickcutter.com
 HTTPS = PUBLIC_URL.startswith("https://")
 SESSION_DAYS = int(env("QUICKCUTTER_SESSION_DAYS", "30"))
