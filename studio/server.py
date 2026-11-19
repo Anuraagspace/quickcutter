@@ -1631,17 +1631,17 @@ def admin_delete_user(request: Request, uid: str, body: dict = Body(...)):
 
 
 def main():
-    print(f"\n  Quick Cutter is running:  {config.PUBLIC_URL}\n")
+    print(f"\n  Quick Cutter is running on {config.HOST}:{config.PORT} (Public: {config.PUBLIC_URL})\n", flush=True)
     if not config.ACCOUNTS and (config.HTTPS or config.HOST not in ("127.0.0.1", "localhost", "::1")):
         print("  Sign-in is off, so anyone who can reach this address can use Quick Cutter and its AI key.\n"
               "  On a server other people can reach, set QUICKCUTTER_ACCOUNTS=1 in .env.\n", flush=True)
     if config.env("QUICKCUTTER_AUTO_RELOAD") == "1":
         # restart by itself whenever the server code changes (pages in web/ never need a restart)
-        uvicorn.run("studio.server:app", host=config.HOST, port=config.PORT, log_level="warning", backlog=4096, reload=True,
+        uvicorn.run("studio.server:app", host=config.HOST, port=config.PORT, log_level="info", backlog=4096, reload=True,
                     reload_dirs=[str(config.ROOT / "studio")], reload_includes=["*.py"],
                     proxy_headers=bool(config.env("QUICKCUTTER_TRUST_PROXY")), forwarded_allow_ips="*")
         return
-    uvicorn.run(app, host=config.HOST, port=config.PORT, log_level="warning", backlog=4096,
+    uvicorn.run(app, host=config.HOST, port=config.PORT, log_level="info", backlog=4096,
                 proxy_headers=bool(config.env("QUICKCUTTER_TRUST_PROXY")), forwarded_allow_ips="*")
 
 
